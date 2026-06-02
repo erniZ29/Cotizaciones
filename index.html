@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cotizador G5">
+  <meta name="theme-color" content="#0f172a">
+  <title>Cotizador – Delivery G5</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #263347;
+      --border: #334155;
+      --accent: #f59e0b;
+      --accent2: #fbbf24;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-mark {
+      width: 42px; height: 42px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: #0f172a;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text);
+    }
+    header p { font-size: 12px; color: var(--muted); }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    /* MAIN CONTENT */
+    main { max-width: 700px; margin: 0 auto; padding: 20px 16px; }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* FORM ELEMENTS */
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .form-group { flex: 1; min-width: 140px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input[type="text"], input[type="number"], input[type="tel"], input[type="email"], textarea, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 60px; }
+    select option { background: var(--surface); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 9px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #7f1d1d;
+      color: var(--danger);
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .btn-danger:hover { background: #7f1d1d33; }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      font-weight: 700;
+      width: 100%;
+      justify-content: center;
+      padding: 14px;
+      font-size: 15px;
+      border-radius: 12px;
+    }
+    .btn-success:hover { background: #16a34a; transform: translateY(-1px); }
+
+    /* PRODUCT ADD FORM */
+    .img-preview {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .img-preview-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .img-upload-btn {
+      background: var(--surface2);
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .img-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #fileInput { display: none; }
+
+    /* PRODUCT LIST */
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface2);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .product-item:hover { border-color: var(--accent); }
+    .product-item img {
+      width: 52px; height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .product-total { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--accent); white-space: nowrap; }
+
+    /* SUMMARY */
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row.total {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--accent);
+      padding-top: 14px;
+    }
+    .summary-row label { color: var(--muted); }
+
+    /* BADGE */
+    .badge {
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 11px;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-family: 'Syne', sans-serif;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+    .empty-state p { font-size: 14px; }
+
+    /* HIDDEN PANEL */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* PDF PREVIEW (hidden, used for rendering) */
+    #pdfTemplate {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+      background: #fff;
+      color: #111;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--success);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 999;
+      transition: transform 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* DISCOUNT INPUT inline */
+    .discount-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .discount-row input { max-width: 100px; }
+    .discount-row select { max-width: 80px; }
+
+    @media (max-width: 480px) {
+      header { flex-wrap: wrap; }
+      .tabs { margin-left: 0; width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">G5</div>
+  <div>
+    <h1>Delivery G5</h1>
+    <p>Sistema de Cotizaciones</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('cotizar')">Cotizar</button>
+    <button class="tab-btn" onclick="switchTab('historial')">Historial</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== PANEL COTIZAR ===== -->
+  <div id="panel-cotizar" class="panel active">
+
+    <!-- Cliente -->
+    <div class="section-title">📋 Datos del cliente</div>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre / Empresa *</label>
+          <input type="text" id="clientName" placeholder="Ej. Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="clientPhone" placeholder="Ej. 3312345678">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="clientEmail" placeholder="cliente@correo.com">
+        </div>
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" id="clientAddress" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Notas / condiciones</label>
+          <textarea id="quoteNotes" placeholder="Ej. Vigencia 7 días, entrega en 48 hrs..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agregar producto -->
+    <div class="section-title">📦 Agregar producto</div>
+    <div class="card">
+      <div class="img-preview-wrap">
+        <img id="previewImg" class="img-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2394a3b8' viewBox='0 0 24 24'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-1 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E" alt="preview">
+        <div>
+          <label class="img-upload-btn" for="fileInput">📷 Subir foto</label>
+          <input type="file" id="fileInput" accept="image/*" onchange="handleImageUpload(event)">
+          <div style="font-size:11px; color:var(--muted); margin-top:4px;">o pega una URL abajo</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>URL de imagen (opcional)</label>
+          <input type="text" id="prodImg" placeholder="https://..." oninput="previewFromURL(this.value)">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:3">
+          <label>Nombre del producto *</label>
+          <input type="text" id="prodName" placeholder="Ej. Agua purificada 20L">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Precio unitario ($) *</label>
+          <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Cantidad *</label>
+          <input type="number" id="prodQty" placeholder="1" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label>Descuento</label>
+          <div class="discount-row">
+            <input type="number" id="prodDiscount" placeholder="0" min="0" style="max-width:80px">
+            <select id="prodDiscountType">
+              <option value="%">%</option>
+              <option value="$">$</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Descripción corta</label>
+          <input type="text" id="prodDesc" placeholder="Descripción opcional">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addProduct()" style="width:100%; justify-content:center; margin-top:4px;">
+        ➕ Agregar a cotización
+      </button>
+    </div>
+
+    <!-- Lista de productos -->
+    <div class="section-title">
+      🛒 Productos en cotización
+      <span class="badge" id="prodCount">0</span>
+    </div>
+    <div id="productList">
+      <div class="empty-state">
+        <div class="icon">📦</div>
+        <p>Aún no has agregado productos</p>
+      </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="card" id="summaryCard" style="display:none; margin-top:16px;">
+      <div class="section-title" style="margin-bottom:16px;">💰 Resumen</div>
+      <div class="summary-row">
+        <label>Subtotal</label>
+        <span id="sumSubtotal">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <label>Descuento productos</label>
+        <span id="sumDiscount" style="color: var(--danger);">-$0.00</span>
+      </div>
+      <div class="summary-row">
+        <label>Descuento adicional</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="number" id="extraDiscount" placeholder="0" min="0" style="width:80px; padding:6px 10px;" oninput="updateSummary()">
+          <select id="extraDiscountType" style="width:60px; padding:6px 8px;" onchange="updateSummary()">
+            <option value="%">%</option>
+            <option value="$">$</option>
+          </select>
+        </div>
+      </div>
+      <div class="summary-row total">
+        <label>TOTAL</label>
+        <span id="sumTotal">$0.00</span>
+      </div>
+
+      <button class="btn btn-success" onclick="generatePDF()" style="margin-top:20px;">
+        📄 Generar PDF y descargar
+      </button>
+      <button class="btn btn-outline" onclick="clearAll()" style="width:100%; justify-content:center; margin-top:10px; color:var(--danger); border-color:#7f1d1d;">
+        🗑 Limpiar cotización
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ===== PANEL HISTORIAL ===== -->
+  <div id="panel-historial" class="panel">
+    <div class="section-title">📁 Cotizaciones guardadas</div>
+    <div id="historialList">
+      <div class="empty-state">
+        <div class="icon">📂</div>
+        <p>Las cotizaciones generadas aparecerán aquí</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- PDF TEMPLATE (fuera de pantalla) -->
+<div id="pdfTemplate"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================
+// STATE
+// =====================
+let products = [];
+let currentImgData = '';
+
+// =====================
+// TABS
+// =====================
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'historial') renderHistorial();
+}
+
+// =====================
+// IMAGE HANDLING
+// =====================
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    currentImgData = ev.target.result;
+    document.getElementById('previewImg').src = currentImgData;
+    document.getElementById('prodImg').value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewFromURL(url) {
+  if (url) {
+    currentImgData = url;
+    document.getElementById('previewImg').src = url;
+  }
+}
+
+// =====================
+// ADD PRODUCT
+// =====================
+function addProduct() {
+  const name = document.getElementById('prodName').value.trim();
+  const price = parseFloat(document.getElementById('prodPrice').value) || 0;
+  const qty = parseInt(document.getElementById('prodQty').value) || 1;
+  const desc = document.getElementById('prodDesc').value.trim();
+  const discount = parseFloat(document.getElementById('prodDiscount').value) || 0;
+  const discountType = document.getElementById('prodDiscountType').value;
+  const imgUrl = document.getElementById('prodImg').value.trim();
+
+  if (!name) { showToast('⚠️ Escribe el nombre del producto', true); return; }
+  if (price <= 0) { showToast('⚠️ Escribe un precio válido', true); return; }
+
+  const imgSrc = currentImgData || imgUrl || '';
+
+  const subtotal = price * qty;
+  const discountAmt = discountType === '%' ? subtotal * (discount / 100) : Math.min(discount, subtotal);
+  const total = subtotal - discountAmt;
+
+  products.push({ id: Date.now(), name, price, qty, desc, discount, discountType, imgSrc, subtotal, discountAmt, total });
+
+  resetProductForm();
+  renderProducts();
+  updateSummary();
+  showToast('✅ Producto agregado');
+}
+
+function resetProductForm() {
+  document.getElementById('prodName').value = '';
+  document.getElementById('prodPrice').value = '';
+  document.getElementById('prodQty').value = '1';
+  document.getElementById('prodDesc').value = '';
+  document.getElementById('prodDiscount').value = '';
+  document.getElementById('prodImg').value = '';
+  currentImgData = '';
+  document.getElementById('previewImg').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2394a3b8' viewBox='0 0 24 24'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-1 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E";
+  document.getElementById('fileInput').value = '';
+}
+
+// =====================
+// RENDER PRODUCTS
+// =====================
+function renderProducts() {
+  const list = document.getElementById('productList');
+  document.getElementById('prodCount').textContent = products.length;
+
+  if (products.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>Aún no has agregado productos</p></div>`;
+    document.getElementById('summaryCard').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('summaryCard').style.display = 'block';
+
+  list.innerHTML = products.map((p, i) => `
+    <div class="product-item">
+      ${p.imgSrc
+        ? `<img src="${p.imgSrc}" alt="${p.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%2394a3b8%27 viewBox=%270 0 24 24%27%3E%3Cpath d=%27M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-1 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z%27/%3E%3C/svg%3E'">`
+        : `<div style="width:52px;height:52px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📦</div>`
+      }
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">
+          $${p.price.toFixed(2)} × ${p.qty}
+          ${p.discountAmt > 0 ? `<span style="color:var(--danger)"> − $${p.discountAmt.toFixed(2)}</span>` : ''}
+        </div>
+        ${p.desc ? `<div class="product-meta">${p.desc}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="product-total">$${p.total.toFixed(2)}</div>
+        <button class="btn btn-danger" onclick="removeProduct(${i})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeProduct(i) {
+  products.splice(i, 1);
+  renderProducts();
+  updateSummary();
+}
+
+// =====================
+// SUMMARY
+// =====================
+function updateSummary() {
+  const subtotal = products.reduce((s, p) => s + p.subtotal, 0);
+  const discounts = products.reduce((s, p) => s + p.discountAmt, 0);
+  const afterProdDiscount = subtotal - discounts;
+
+  const extraVal = parseFloat(document.getElementById('extraDiscount')?.value) || 0;
+  const extraType = document.getElementById('extraDiscountType')?.value || '%';
+  const extraAmt = extraType === '%' ? afterProdDiscount * (extraVal / 100) : Math.min(extraVal, afterProdDiscount);
+
+  const total = afterProdDiscount - extraAmt;
+
+  document.getElementById('sumSubtotal').textContent = '$' + subtotal.toFixed(2);
+  document.getElementById('sumDiscount').textContent = '-$' + discounts.toFixed(2);
+  document.getElementById('sumTotal').textContent = '$' + total.toFixed(2);
+}
+
+// =====================
+// CLEAR
+// =====================
+function clearAll() {
+  if (!confirm('¿Limpiar toda la cotización?')) return;
+  products = [];
+  document.getElementById('clientName').value = '';
+  document.getElementById('clientPhone').value = '';
+  document.getElementById('clientEmail').value = '';
+  document.getElementById('clientAddress').value = '';
+  document.getElementById('quoteNotes').value = '';
+  document.getElementById('extraDiscount').value = '';
+  renderProducts();
+  updateSummary();
+}
+
+// =====================
+// GENERATE PDF
+// =====================
+async function generatePDF() {
+  const clientName = document.getElementById('clientName').value.trim() || 'Cliente';
+  const clientPhone = document.getElementById('clientPhone').value.trim();
+  const clientEmail = document.getElementById('clientEmail').value.trim();
+  const clientAddress = document.getElementById('clientAddress').value.trim();
+  const notes = document.getElementById('quoteNotes').value.trim();
+
+  const subtotal = products.reduce((s, p) => s + p.subtotal, 0);
+  const discounts = products.reduce((s, p) => s + p.discountAmt, 0);
+  const afterProdDiscount = subtotal - discounts;
+  const extraVal = parseFloat(document.getElementById('extraDiscount').value) || 0;
+  const extraType = document.getElementById('extraDiscountType').value;
+  const extraAmt = extraType === '%' ? afterProdDiscount * (extraVal / 100) : Math.min(extraVal, afterProdDiscount);
+  const total = afterProdDiscount - extraAmt;
+
+  const folio = 'G5-' + Date.now().toString().slice(-6);
+  const fecha = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Build product rows with images as base64
+  let productRowsHTML = '';
+  for (const p of products) {
+    let imgHTML = `<div style="width:60px;height:60px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;">📦</div>`;
+    if (p.imgSrc) {
+      if (p.imgSrc.startsWith('data:')) {
+        imgHTML = `<img src="${p.imgSrc}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;">`;
+      } else {
+        try {
+          const b64 = await imgToBase64(p.imgSrc);
+          imgHTML = `<img src="${b64}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;">`;
+        } catch { /* use placeholder */ }
+      }
+    }
+
+    const discStr = p.discountAmt > 0
+      ? `<span style="color:#ef4444;font-size:11px;display:block;">Desc: -$${p.discountAmt.toFixed(2)}</span>` : '';
+
+    productRowsHTML += `
+      <tr>
+        <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;vertical-align:middle;">${imgHTML}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;vertical-align:middle;">
+          <strong style="font-size:13px;color:#1e293b;">${p.name}</strong>
+          ${p.desc ? `<span style="display:block;font-size:11px;color:#64748b;">${p.desc}</span>` : ''}
+        </td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:center;font-size:13px;vertical-align:middle;">${p.qty}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:right;font-size:13px;vertical-align:middle;">$${p.price.toFixed(2)}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:right;vertical-align:middle;">
+          <strong style="font-size:13px;color:#1e293b;">$${p.total.toFixed(2)}</strong>
+          ${discStr}
+        </td>
+      </tr>`;
+  }
+
+  const extraDiscStr = extraAmt > 0
+    ? `<tr><td colspan="4" style="text-align:right;padding:6px 8px;color:#64748b;">Descuento adicional (${extraVal}${extraType}):</td><td style="text-align:right;padding:6px 8px;color:#ef4444;">-$${extraAmt.toFixed(2)}</td></tr>` : '';
+
+  const htmlContent = `
+  <div style="padding:40px;font-family:'DM Sans',Arial,sans-serif;color:#1e293b;background:#fff;width:794px;">
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:3px solid #f59e0b;">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+          <div style="width:48px;height:48px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#0f172a;font-family:Arial,sans-serif;">G5</div>
+          <div>
+            <div style="font-size:22px;font-weight:900;color:#0f172a;font-family:Arial,sans-serif;">Delivery G5</div>
+            <div style="font-size:12px;color:#64748b;">📞 3313023569</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="background:#0f172a;color:#f59e0b;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;font-family:Arial,sans-serif;margin-bottom:6px;">COTIZACIÓN</div>
+        <div style="font-size:13px;color:#64748b;">Folio: <strong>${folio}</strong></div>
+        <div style="font-size:12px;color:#94a3b8;">${fecha}</div>
+      </div>
+    </div>
+
+    <!-- CLIENTE -->
+    <div style="background:#f8fafc;border-radius:10px;padding:16px 20px;margin-bottom:24px;border:1px solid #e2e8f0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:8px;">CLIENTE</div>
+      <div style="font-size:16px;font-weight:700;color:#1e293b;">${clientName}</div>
+      ${clientPhone ? `<div style="font-size:13px;color:#64748b;margin-top:2px;">📞 ${clientPhone}</div>` : ''}
+      ${clientEmail ? `<div style="font-size:13px;color:#64748b;">✉️ ${clientEmail}</div>` : ''}
+      ${clientAddress ? `<div style="font-size:13px;color:#64748b;">📍 ${clientAddress}</div>` : ''}
+    </div>
+
+    <!-- TABLA PRODUCTOS -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+      <thead>
+        <tr style="background:#0f172a;color:#f59e0b;">
+          <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;border-radius:8px 0 0 0;">Foto</th>
+          <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">Producto</th>
+          <th style="padding:10px 8px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">Cant.</th>
+          <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">P. Unit.</th>
+          <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;border-radius:0 8px 0 0;">Total</th>
+        </tr>
+      </thead>
+      <tbody>${productRowsHTML}</tbody>
+    </table>
+
+    <!-- TOTALES -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:24px;">
+      <table style="min-width:280px;">
+        <tr><td style="padding:5px 10px;color:#64748b;font-size:13px;">Subtotal:</td><td style="text-align:right;padding:5px 10px;font-size:13px;">$${subtotal.toFixed(2)}</td></tr>
+        ${discounts > 0 ? `<tr><td style="padding:5px 10px;color:#64748b;font-size:13px;">Descuento productos:</td><td style="text-align:right;padding:5px 10px;font-size:13px;color:#ef4444;">-$${discounts.toFixed(2)}</td></tr>` : ''}
+        ${extraDiscStr}
+        <tr style="border-top:2px solid #0f172a;">
+          <td style="padding:10px 10px;font-size:18px;font-weight:900;color:#0f172a;font-family:Arial,sans-serif;">TOTAL:</td>
+          <td style="text-align:right;padding:10px 10px;font-size:22px;font-weight:900;color:#f59e0b;font-family:Arial,sans-serif;">$${total.toFixed(2)}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- NOTAS -->
+    ${notes ? `
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;margin-bottom:6px;">📋 Notas y condiciones</div>
+      <div style="font-size:13px;color:#78350f;">${notes}</div>
+    </div>` : ''}
+
+    <!-- FOOTER -->
+    <div style="border-top:1px solid #e2e8f0;padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:11px;color:#94a3b8;">Generado con el sistema de cotizaciones Delivery G5</div>
+      <div style="font-size:11px;color:#94a3b8;">📞 3313023569</div>
+    </div>
+  </div>`;
+
+  document.getElementById('pdfTemplate').innerHTML = htmlContent;
+
+  showToast('⏳ Generando PDF...');
+
+  setTimeout(async () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const el = document.getElementById('pdfTemplate');
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+      const fileName = `Cotizacion_G5_${clientName.replace(/\s+/g,'_')}_${folio}.pdf`;
+      pdf.save(fileName);
+
+      // Guardar en historial
+      saveToHistorial({ folio, fecha, clientName, total, products: [...products] });
+      showToast('✅ PDF generado y descargado');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ Error al generar PDF', true);
+    }
+  }, 200);
+}
+
+// =====================
+// HISTORIAL
+// =====================
+function saveToHistorial(entry) {
+  const hist = JSON.parse(localStorage.getItem('g5_historial') || '[]');
+  hist.unshift(entry);
+  if (hist.length > 50) hist.pop();
+  localStorage.setItem('g5_historial', JSON.stringify(hist));
+}
+
+function renderHistorial() {
+  const hist = JSON.parse(localStorage.getItem('g5_historial') || '[]');
+  const el = document.getElementById('historialList');
+  if (!hist.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>Las cotizaciones generadas aparecerán aquí</p></div>`;
+    return;
+  }
+  el.innerHTML = hist.map(h => `
+    <div class="product-item">
+      <div style="font-size:24px;">📄</div>
+      <div class="product-info">
+        <div class="product-name">${h.clientName}</div>
+        <div class="product-meta">${h.fecha} · ${h.products.length} producto(s)</div>
+        <div class="product-meta" style="color:var(--muted);font-size:11px;">Folio: ${h.folio}</div>
+      </div>
+      <div class="product-total">$${h.total.toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+// =====================
+// UTILS
+// =====================
+function imgToBase64(url) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      res(c.toDataURL('image/png'));
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+let toastTimer;
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isErr ? '#ef4444' : '#22c55e';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>
